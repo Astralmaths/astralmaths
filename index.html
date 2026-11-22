@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVENT HORIZON // Relativistic Astrophysics Engine</title>
+    
+    <!-- Modern Premium Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Math Notation Renderer (MathJax) -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- 3D Visualization (Three.js & OrbitControls) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        :root {
+            --bg: #000000;
+            --panel-bg: #090b10;
+            --panel-bg-sub: #050608;
+            --panel-border: #222938;
+            --panel-border-hover: #00f0ff;
+            --accent-cyan: #00f0ff;
+            --accent-cyan-glow: rgba(0, 240, 255, 0.35);
+            --accent-violet: #a855f7;
+            --accent-gold: #fbbf24;
+            --accent-pink: #f43f5e;
+            --accent-green: #10b981;
+            --text-main: #ffffff;
+            --text-muted: #e2e8f0;
+            --text-dim: #94a3b8;
+            --input-bg: #030407;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --border-width: 1px;
+        }
+
+        /* High Contrast Mode Overrides */
+        body.high-contrast {
+            --bg: #000000;
+            --panel-bg: #000000;
+            --panel-bg-sub: #000000;
+            --panel-border: #ffffff;
+            --panel-border-hover: #00f0ff;
+            --text-main: #ffffff;
+            --text-muted: #ffffff;
+            --text-dim: #cbd5e1;
+            --input-bg: #000000;
+            --border-width: 2px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1560px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.1rem 1.75rem;
+            background: var(--panel-bg);
+            border: var(--border-width) solid var(--panel-border);
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .brand-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 14px var(--accent-cyan), 0 0 28px var(--accent-cyan);
+            animation: pulse-dot 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.8; }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-pill {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 0.95rem;
+            border-radius: 30px;
+            background: #000000;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            letter-spacing: 0.05em;
+            font-family: var(--font-mono);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .hc-toggle-btn {
+            background: #000000;
+            border: 1.5px solid #ffffff;
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .hc-toggle-btn:hover {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 14px #ffffff;
+        }
+
+        body.high-contrast .hc-toggle-btn {
+            background: var(--accent-cyan);
+            color: #000000;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 16px var(--accent-cyan);
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 1.75rem;
+        }
+
+        .tab-btn {
+            background: var(--panel-bg);
+            border: var(--border-width) solid var(--panel-border);
+            color: var(--text-muted);
+            padding: 1rem 1.15rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tab-btn span {
+            font-size: 0.74rem;
+            font-weight: 400;
+            color: var(--text-dim);
+            line-height: 1.35;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            border-color: var(--accent-cyan);
+            background: #111520;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: #0d131f;
+            border-color: var(--accent-cyan);
+            border-width: 2px;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), inset 0 0 12px rgba(0, 240, 255, 0.1);
+        }
+
+        body.high-contrast .tab-btn.active {
+            background: #000000;
+            border-color: var(--accent-cyan);
+            border-width: 3px;
+        }
+
+        .tab-btn.active span {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* Engine Panel Layouts */
+        .engine-panel {
+            display: none;
+            grid-template-columns: 1fr 480px;
+            gap: 1.5rem;
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+
+        .engine-panel.standard-grid {
+            grid-template-columns: 380px 1fr 420px;
+        }
+
+        .engine-panel.active {
+            display: grid;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--panel-bg);
+            border: var(--border-width) solid var(--panel-border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .card-header {
+            border-bottom: var(--border-width) solid var(--panel-border);
+            padding-bottom: 0.85rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        /* Form Controls */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .input-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            background: var(--input-bg);
+            border: var(--border-width) solid var(--panel-border);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            border-color: var(--accent-cyan);
+            border-width: 2px;
+            background: #000000;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+        }
+
+        .unit-select {
+            width: 115px;
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            flex-shrink: 0;
+            cursor: pointer;
+            background: #0c1017;
+        }
+
+        /* Presets */
+        .presets {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .preset-chip {
+            background: #0f141f;
+            border: 1px solid #334155;
+            color: #ffffff;
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: var(--font-sans);
+        }
+
+        .preset-chip:hover {
+            border-color: var(--accent-cyan);
+            color: #000000;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        /* 3D and Canvas Visualizer Containers */
+        .vis-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background: #000000;
+            border-radius: 10px;
+            overflow: hidden;
+            border: var(--border-width) solid var(--panel-border);
+        }
+
+        .vis-overlay-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.9rem;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            z-index: 10;
+            font-size: 0.74rem;
+            backdrop-filter: blur(8px);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .vis-toggles {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .vis-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #e2e8f0;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .vis-toggle-label input {
+            cursor: pointer;
+            accent-color: var(--accent-cyan);
+        }
+
+        .vis-hint {
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.03em;
+        }
+
+        /* Black Hole Table Styling */
+        .bh-table-container {
+            overflow-x: auto;
+            margin-top: 0.25rem;
+        }
+
+        .bh-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            text-align: left;
+        }
+
+        .bh-table th {
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.4rem 0.85rem;
+            border-bottom: 2px solid var(--panel-border);
+        }
+
+        .bh-table td {
+            background: #080a10;
+            padding: 0.65rem 0.85rem;
+            vertical-align: middle;
+            font-size: 0.88rem;
+            border-top: 1px solid #141a29;
+            border-bottom: 1px solid #141a29;
+        }
+
+        .bh-table tr td:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            border-left: 1px solid #141a29;
+            font-weight: 600;
+            color: #ffffff;
+            width: 24%;
+        }
+
+        .bh-table tr td:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-right: 1px solid #141a29;
+        }
+
+        .formula-badge {
+            background: #141026;
+            border: 1px solid #7c3aed;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            display: inline-block;
+            color: #e9d5ff;
+            font-size: 0.85rem;
+        }
+
+        .footnote {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            padding: 0.85rem 1rem;
+            background: #05070d;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+        }
+
+        /* Metric Cards */
+        .metrics-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .metric-card {
+            background: #05070c;
+            border: var(--border-width) solid var(--panel-border);
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 1.1rem 1.25rem;
+            position: relative;
+        }
+
+        .metric-card.violet { border-left-color: var(--accent-violet); }
+        .metric-card.gold { border-left-color: var(--accent-gold); }
+        .metric-card.pink { border-left-color: var(--accent-pink); }
+        .metric-card.green { border-left-color: var(--accent-green); }
+
+        .metric-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-value {
+            font-family: var(--font-mono);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            word-break: break-all;
+        }
+
+        .metric-sub {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 0.3rem;
+            font-weight: 500;
+        }
+
+        .math-block {
+            background: #04060a;
+            border: var(--border-width) solid var(--panel-border);
+            border-radius: 8px;
+            padding: 0.85rem;
+            font-size: 0.88rem;
+            overflow-x: auto;
+            color: #ffffff;
+        }
+
+        /* Status Warning Callout */
+        .warning-callout {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0.5rem;
+            border: 1.5px solid transparent;
+        }
+
+        .warning-callout.safe {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: #10b981;
+            color: #34d399;
+        }
+
+        .warning-callout.caution {
+            background: rgba(251, 191, 36, 0.12);
+            border-color: #fbbf24;
+            color: #fcd34d;
+        }
+
+        .warning-callout.danger {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: #f43f5e;
+            color: #fda4af;
+        }
+
+        @media (max-width: 1280px) {
+            .engine-panel, .engine-panel.standard-grid {
+                grid-template-columns: 1fr;
+            }
+            .vis-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="brand-dot"></div>
+                EVENT HORIZON // COMPUTATIONAL ASTROPHYSICS ENGINE
+            </div>
+            <div class="header-actions">
+                <button class="hc-toggle-btn" id="hc-toggle-btn" onclick="toggleHighContrast()">
+                    <span id="hc-icon">👁</span> HIGH CONTRAST: <span id="hc-state">OFF</span>
+                </button>
+                <div class="status-pill">PRECISION: IEEE-754 DOUBLE</div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="setEngine(0)">
+                01. Black Hole Thermodynamics
+                <span>Radii, Hawking temp, entropy & Gargantua 3D simulation</span>
+            </button>
+            <button class="tab-btn" onclick="setEngine(1)">
+                02. Planetary Thermodynamics
+                <span>Insolation, albedo, flux & greenhouse warming</span>
+            </button>
+            <button class="tab-btn" onclick="setEngine(2)">
+                03. Special Relativity
+                <span>Lorentz boost, length contraction & relativistic mass</span>
+            </button>
+            <button class="tab-btn" onclick="setEngine(3)">
+                04. General Relativity
+                <span>Schwarzschild spacetime, Flamm's paraboloid, ISCO & dilation</span>
+            </button>
+            <button class="tab-btn" onclick="setEngine(4)">
+                05. Roche Limit
+                <span>Tidal breakup distance for rigid & fluid satellites</span>
+            </button>
+            <button class="tab-btn" onclick="setEngine(5)">
+                06. Tsiolkovsky Rocket Equation
+                <span>Delta-v, mass ratio & exhaust velocity metrics</span>
+            </button>
+            <button class="tab-btn" onclick="setEngine(6)">
+                07. Cosmic Radiation Dose
+                <span>GCR, solar particle events & shielding mass metrics</span>
+            </button>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 1: BLACK HOLE THERMODYNAMICS & PROPER GRAPHIC -->
+        <!-- =================================================================== -->
+        <div class="engine-panel active" id="engine-0">
+            <div class="card">
+                <div class="card-header">
+                    <span>Schwarzschild Black Hole Metrics</span>
+                    <div class="presets">
+                        <span style="font-size:0.75rem; color:var(--text-dim); align-self:center; margin-right:4px;">Quick Presets:</span>
+                        <div class="preset-chip" onclick="setBHMassValue(1)">1 M☉ (Solar)</div>
+                        <div class="preset-chip" onclick="setBHMassValue(3.00015e-6)">Earth Mass</div>
+                        <div class="preset-chip" onclick="setBHMassValue(4.15e6)">Sagittarius A*</div>
+                        <div class="preset-chip" onclick="setBHMassValue(6.5e9)">M87* (Supermassive)</div>
+                        <div class="preset-chip" onclick="setBHMassValue(6.6e10)">TON 618 (Ultramassive)</div>
+                    </div>
+                </div>
+
+                <div class="bh-table-container">
+                    <table class="bh-table">
+                        <thead>
+                            <tr>
+                                <th>Quantity</th>
+                                <th>Value</th>
+                                <th>Units</th>
+                                <th>Expression</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Mass -->
+                            <tr>
+                                <td>Mass (\(M\))</td>
+                                <td><input type="text" id="bh-val-mass" value="1" oninput="runBHCalculations('mass')"></td>
+                                <td>
+                                    <select id="bh-unit-mass" class="unit-select" onchange="runBHCalculations('mass')">
+                                        <option value="MSUN">M☉</option>
+                                        <option value="KG">kg</option>
+                                        <option value="MEARTH">M⊕</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(M\)</div></td>
+                            </tr>
+                            <!-- Schwarzschild Radius -->
+                            <tr>
+                                <td>Schwarzschild radius (\(R_s\))</td>
+                                <td><input type="text" id="bh-val-rs" oninput="runBHCalculations('rs')"></td>
+                                <td>
+                                    <select id="bh-unit-rs" class="unit-select" onchange="runBHCalculations('mass')">
+                                        <option value="M">m</option>
+                                        <option value="KM" selected>km</option>
+                                        <option value="AU">AU</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(R_s = \frac{2GM}{c^2}\)</div></td>
+                            </tr>
+                            <!-- Surface Area -->
+                            <tr>
+                                <td>Surface area (\(A\))</td>
+                                <td><input type="text" id="bh-val-area" readonly></td>
+                                <td>
+                                    <select id="bh-unit-area" class="unit-select">
+                                        <option value="M2">m²</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(A = 4\pi R_s^2 = \frac{16\pi G^2 M^2}{c^4}\)</div></td>
+                            </tr>
+                            <!-- Effective Density -->
+                            <tr>
+                                <td>Effective density (\(\rho\))</td>
+                                <td><input type="text" id="bh-val-rho" readonly></td>
+                                <td>
+                                    <select id="bh-unit-rho" class="unit-select" onchange="runBHCalculations('mass')">
+                                        <option value="RHOSUN">ρ☉</option>
+                                        <option value="KG_M3">kg/m³</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(\rho = \frac{3 c^6}{32\pi G^3 M^2}\)</div></td>
+                            </tr>
+                            <!-- Surface Gravity -->
+                            <tr>
+                                <td>Surface gravity (\(\kappa\))*</td>
+                                <td><input type="text" id="bh-val-kappa" readonly></td>
+                                <td>
+                                    <select id="bh-unit-kappa" class="unit-select">
+                                        <option value="MS2">m/s²</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(\kappa = \frac{c^4}{4GM}\)</div></td>
+                            </tr>
+                            <!-- Surface Tides -->
+                            <tr>
+                                <td>Tidal gradient (\(d\kappa_R\))</td>
+                                <td><input type="text" id="bh-val-tides" readonly></td>
+                                <td>
+                                    <select id="bh-unit-tides" class="unit-select">
+                                        <option value="MS2M">m/s²/m</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(d\kappa_R = \frac{c^6}{4G^2 M^2}\)</div></td>
+                            </tr>
+                            <!-- Time to Singularity -->
+                            <tr>
+                                <td>Infall time to singularity</td>
+                                <td><input type="text" id="bh-val-tsing" readonly></td>
+                                <td>
+                                    <select id="bh-unit-tsing" class="unit-select">
+                                        <option value="S">s</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(t_s = \frac{\pi G M}{c^3}\)</div></td>
+                            </tr>
+                            <!-- Entropy -->
+                            <tr>
+                                <td>Bekenstein-Hawking Entropy</td>
+                                <td><input type="text" id="bh-val-entropy" readonly></td>
+                                <td><span style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">(dimensionless \(S/k_B\))</span></td>
+                                <td><div class="formula-badge">\(S = \frac{4\pi G M^2}{\hbar c}\)</div></td>
+                            </tr>
+                            <!-- Temperature -->
+                            <tr>
+                                <td>Hawking Temperature (\(T_H\))</td>
+                                <td><input type="text" id="bh-val-temp" readonly></td>
+                                <td>
+                                    <select id="bh-unit-temp" class="unit-select">
+                                        <option value="K">K</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(T_H = \frac{\hbar c^3}{8\pi G M k_B}\)</div></td>
+                            </tr>
+                            <!-- Peak Photons -->
+                            <tr>
+                                <td>Hawking peak photon energy</td>
+                                <td><input type="text" id="bh-val-peak" readonly></td>
+                                <td>
+                                    <select id="bh-unit-peak" class="unit-select">
+                                        <option value="EV">eV</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(E_{\text{peak}} \approx 2.821 k_B T_H\)</div></td>
+                            </tr>
+                            <!-- Nominal Luminosity -->
+                            <tr>
+                                <td>Hawking Luminosity (\(P\))</td>
+                                <td><input type="text" id="bh-val-lum" readonly></td>
+                                <td>
+                                    <select id="bh-unit-lum" class="unit-select">
+                                        <option value="W">W</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(P = \frac{\hbar c^6}{15360\pi G^2 M^2}\)</div></td>
+                            </tr>
+                            <!-- Lifetime -->
+                            <tr>
+                                <td>Evaporation Lifetime</td>
+                                <td><input type="text" id="bh-val-life" readonly></td>
+                                <td>
+                                    <select id="bh-unit-life" class="unit-select" onchange="runBHCalculations('mass')">
+                                        <option value="YR" selected>years</option>
+                                        <option value="S">s</option>
+                                    </select>
+                                </td>
+                                <td><div class="formula-badge">\(t_{\text{evap}} \propto \frac{5120\pi G^2 M^3}{\hbar c^4}\)</div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="footnote">
+                    *The surface gravity listed is the classical geometric quantity \(\kappa = c^4 / 4GM\). In General Relativity, the acceleration required for a stationary hover diverges asymptotically to infinity at the event horizon (\(r = R_s\)).
+                </div>
+            </div>
+
+            <!-- Visualization Panel: Proper Supermassive Black Hole 3D -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Cinematic Supermassive Black Hole Simulation</span>
+                    <span style="font-size:0.75rem; color:var(--accent-cyan);">INTERACTIVE 3D // ORBIT VIEW</span>
+                </div>
+                
+                <div class="vis-container">
+                    <div id="bh-3d-view" style="width: 100%; height: 100%; cursor: grab;"></div>
+                    
+                    <div class="vis-overlay-controls">
+                        <div class="vis-toggles">
+                            <label class="vis-toggle-label">
+                                <input type="checkbox" id="bh-toggle-lensing" checked onchange="updateBHToggles()">
+                                Gravitational Lensing Halo
+                            </label>
+                            <label class="vis-toggle-label">
+                                <input type="checkbox" id="bh-toggle-jets" checked onchange="updateBHToggles()">
+                                Relativistic Jets
+                            </label>
+                            <label class="vis-toggle-label">
+                                <input type="checkbox" id="bh-toggle-particles" checked onchange="updateBHToggles()">
+                                Accretion Swirl
+                            </label>
+                        </div>
+                        <div class="vis-hint">DRAG TO ORBIT • SCROLL TO ZOOM</div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Event Horizon Diameter (\(2 R_s\))</div>
+                        <div class="metric-value" id="bh-card-diameter">5.91 km</div>
+                        <div class="metric-sub">Point of no return / Apparent shadow diameter \(\approx 5.2 R_s\)</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Infall Duration to Singularity</div>
+                        <div class="metric-value" id="bh-card-tsing">15.48 microseconds</div>
+                        <div class="metric-sub">Proper time remaining for radial geodesic infall from horizon</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 2: PLANETARY THERMODYNAMICS -->
+        <!-- =================================================================== -->
+        <div class="engine-panel standard-grid" id="engine-1">
+            <div class="card">
+                <div class="card-header">System Configuration</div>
+
+                <div class="input-group">
+                    <label>Star Surface Temp (\(T_*\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sp-stemp" value="5778" oninput="runPlanetary()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">K</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Star Radius (\(R_*\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sp-srad" value="1.0" step="0.01" oninput="runPlanetary()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">R☉</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Orbital Distance (\(d\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sp-dist" value="1.0" step="0.01" oninput="runPlanetary()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">AU</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Planet Bond Albedo (\(A\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sp-albedo" value="0.30" step="0.01" max="0.99" min="0" oninput="runPlanetary()">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Greenhouse Warming (\(\Delta T_{gh}\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sp-gh" value="33" oninput="runPlanetary()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">K</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Planetary Presets</label>
+                    <div class="presets">
+                        <div class="preset-chip" onclick="setPlanetPreset(5778, 1, 1, 0.30, 33)">Earth</div>
+                        <div class="preset-chip" onclick="setPlanetPreset(5778, 1, 0.723, 0.77, 500)">Venus</div>
+                        <div class="preset-chip" onclick="setPlanetPreset(5778, 1, 1.524, 0.25, 5)">Mars</div>
+                        <div class="preset-chip" onclick="setPlanetPreset(3050, 0.14, 0.0485, 0.30, 10)">Proxima b</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Thermal Radiative Visualizer</div>
+                <div class="vis-container" style="display:flex; justify-content:center; align-items:center;">
+                    <canvas id="planet-canvas" style="width:100%; height:100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Thermal Results</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Stellar Luminosity (\(L\))</div>
+                        <div class="metric-value" id="sp-lum">1.00 L☉</div>
+                        <div class="metric-sub" id="sp-lum-watts">3.828e26 W</div>
+                    </div>
+                    <div class="metric-card violet">
+                        <div class="metric-title">Solar Irradiance Flux (\(S\))</div>
+                        <div class="metric-value" id="sp-flux">1361 W/m²</div>
+                        <div class="metric-sub">Solar constant at orbital distance \(d\)</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Equilibrium Temp (\(T_{eq}\))</div>
+                        <div class="metric-value" id="sp-teq">255 K</div>
+                        <div class="metric-sub" id="sp-teq-c">-18 °C (Airless blackbody)</div>
+                    </div>
+                    <div class="metric-card pink">
+                        <div class="metric-title">Surface Temp w/ Greenhouse</div>
+                        <div class="metric-value" id="sp-tsurf">288 K</div>
+                        <div class="metric-sub" id="sp-tsurf-c">15 °C (Habitable surface)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 3: SPECIAL RELATIVITY -->
+        <!-- =================================================================== -->
+        <div class="engine-panel standard-grid" id="engine-2">
+            <div class="card">
+                <div class="card-header">Velocity Parameters</div>
+
+                <div class="input-group">
+                    <label>Velocity Fraction (\(v/c\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sr-v" value="0.900" step="0.001" min="0" max="0.999999999" oninput="runSR()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">c</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Rest Mass (\(m_0\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sr-m" value="1000" oninput="runSR()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">kg</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Proper Length (\(L_0\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sr-l" value="100" oninput="runSR()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">m</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Proper Time Interval (\(\Delta t_0\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="sr-t" value="1" oninput="runSR()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">s</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Quick Velocity Presets</label>
+                    <div class="presets">
+                        <div class="preset-chip" onclick="setSRPreset(0.1)">0.10 c</div>
+                        <div class="preset-chip" onclick="setSRPreset(0.5)">0.50 c</div>
+                        <div class="preset-chip" onclick="setSRPreset(0.866)">0.866 c (\(\gamma=2\))</div>
+                        <div class="preset-chip" onclick="setSRPreset(0.99)">0.99 c (\(\gamma=7\))</div>
+                        <div class="preset-chip" onclick="setSRPreset(0.999)">0.999 c (\(\gamma=22\))</div>
+                    </div>
+                </div>
+
+                <div class="math-block">
+                    $$\gamma = \frac{1}{\sqrt{1 - v^2/c^2}}$$
+                    $$\Delta t = \gamma \Delta t_0, \quad L = L_0 / \gamma$$
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Lorentz Contraction Visualizer</div>
+                <div class="vis-container" style="display:flex; justify-content:center; align-items:center;">
+                    <canvas id="sr-canvas" style="width:100%; height:100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Relativistic Output</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Lorentz Factor (\(\gamma\))</div>
+                        <div class="metric-value" id="sr-gamma">2.2942</div>
+                        <div class="metric-sub">Kinematic dilation multiplier</div>
+                    </div>
+                    <div class="metric-card violet">
+                        <div class="metric-title">Dilated Observer Time (\(\Delta t\))</div>
+                        <div class="metric-value" id="sr-time">2.2942 s</div>
+                        <div class="metric-sub">Elapsed time in stationary laboratory frame</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Contracted Length (\(L\))</div>
+                        <div class="metric-value" id="sr-len">43.59 m</div>
+                        <div class="metric-sub">Spatial compression along axis of motion</div>
+                    </div>
+                    <div class="metric-card pink">
+                        <div class="metric-title">Relativistic Kinetic Energy (\(E_k\))</div>
+                        <div class="metric-value" id="sr-ke">1.163e17 J</div>
+                        <div class="metric-sub" id="sr-tot">Total Energy: 2.062e17 J</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 4: GENERAL RELATIVITY (FIXED & HIGH CONTRAST) -->
+        <!-- =================================================================== -->
+        <div class="engine-panel standard-grid" id="engine-3">
+            <div class="card">
+                <div class="card-header">Schwarzschild Spacetime Geometry</div>
+
+                <div class="input-group">
+                    <label>Central Gravitating Mass (\(M\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="gr-m" value="1.0" step="any" oninput="runGR()">
+                        <select id="gr-m-unit" class="unit-select" onchange="onGRMassUnitChange()">
+                            <option value="MSUN" selected>M☉ (Sun)</option>
+                            <option value="MEARTH">M⊕ (Earth)</option>
+                            <option value="SGR_A">Sgr A*</option>
+                            <option value="M87">M87*</option>
+                            <option value="KG">kg</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Radial Coordinate Distance (\(r\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="gr-r" value="10000" step="any" oninput="runGR()">
+                        <select id="gr-r-unit" class="unit-select" onchange="runGR()">
+                            <option value="KM" selected>km</option>
+                            <option value="M">m</option>
+                            <option value="AU">AU</option>
+                            <option value="RS">× Rs</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>General Relativity Presets</label>
+                    <div class="presets">
+                        <div class="preset-chip" onclick="setGRPreset(1, 'MSUN', 696340, 'KM')">Sun (Surface)</div>
+                        <div class="preset-chip" onclick="setGRPreset(1, 'MEARTH', 6371, 'KM')">Earth (Surface)</div>
+                        <div class="preset-chip" onclick="setGRPreset(1.4, 'MSUN', 12, 'KM')">Neutron Star (12km)</div>
+                        <div class="preset-chip" onclick="setGRPreset(10, 'MSUN', 1.5, 'RS')">Stellar BH (Photon Sphere)</div>
+                        <div class="preset-chip" onclick="setGRPreset(1, 'SGR_A', 3.0, 'RS')">Sagittarius A* (ISCO)</div>
+                        <div class="preset-chip" onclick="setGRPreset(1, 'M87', 5.0, 'RS')">M87* (Accretion Zone)</div>
+                    </div>
+                </div>
+
+                <div class="warning-callout safe" id="gr-zone-callout">
+                    <span>STABLE REGIME: Coordinate distance safely outside photon sphere</span>
+                </div>
+
+                <div class="math-block">
+                    $$d\tau = \sqrt{1 - \frac{2GM}{rc^2}}\, dt = \sqrt{1 - \frac{R_s}{r}}\, dt$$
+                    $$z = \frac{1}{\sqrt{1 - R_s/r}} - 1, \quad R_{ph} = 1.5 R_s, \quad R_{\text{ISCO}} = 3 R_s$$
+                    $$z_{\text{Flamm}}(r) = 2\sqrt{R_s (r - R_s)}$$
+                </div>
+            </div>
+
+            <!-- 3D Spacetime Funnel / Flamm's Paraboloid -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Flamm's Paraboloid (Schwarzschild Embedding)</span>
+                    <span style="font-size:0.75rem; color:var(--accent-violet);">3D CURVATURE FUNNEL</span>
+                </div>
+                <div class="vis-container">
+                    <div id="gr-3d-view" style="width:100%; height:100%; cursor:grab;"></div>
+                    <div class="vis-overlay-controls">
+                        <div class="vis-hint">
+                            <span style="color:#ffffff;">BLACK:</span> Horizon (\(R_s\)) • 
+                            <span style="color:#fbbf24;">GOLD:</span> Photon Sphere (\(1.5 R_s\)) • 
+                            <span style="color:#00f0ff;">CYAN:</span> ISCO (\(3 R_s\)) • 
+                            <span style="color:#f43f5e;">PINK:</span> Observer Probe (\(r\))
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Relativistic Calculations</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Gravitational Time Dilation (\(d\tau/dt\))</div>
+                        <div class="metric-value" id="gr-dilation">0.999999</div>
+                        <div class="metric-sub" id="gr-dilation-sub">Proper time clock rate relative to infinity</div>
+                    </div>
+                    <div class="metric-card violet">
+                        <div class="metric-title">Gravitational Redshift (\(z\))</div>
+                        <div class="metric-value" id="gr-redshift">0.000001</div>
+                        <div class="metric-sub">Spectral line shift \((\lambda_{\text{obs}} - \lambda_0) / \lambda_0\)</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Photon Sphere Radius (\(R_{ph}\))</div>
+                        <div class="metric-value" id="gr-photon">4.43 km</div>
+                        <div class="metric-sub">Circular photon orbit boundary (\(1.5 R_s\))</div>
+                    </div>
+                    <div class="metric-card pink">
+                        <div class="metric-title">ISCO Radius (\(R_{\text{ISCO}}\))</div>
+                        <div class="metric-value" id="gr-isco">17.72 km</div>
+                        <div class="metric-sub">Innermost Stable Circular Orbit (\(3.0 R_s\))</div>
+                    </div>
+                    <div class="metric-card green">
+                        <div class="metric-title">Schwarzschild Radius (\(R_s\))</div>
+                        <div class="metric-value" id="gr-rs">2.95 km</div>
+                        <div class="metric-sub" id="gr-vesc">Escape velocity at \(r\): 199.1 km/s</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 5: ROCHE LIMIT -->
+        <!-- =================================================================== -->
+        <div class="engine-panel standard-grid" id="engine-4">
+            <div class="card">
+                <div class="card-header">Primary & Satellite Parameters</div>
+
+                <div class="input-group">
+                    <label>Primary Body Radius (\(R_M\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="roche-rm" value="6371" oninput="runRoche()">
+                        <select id="roche-rm-unit" class="unit-select" onchange="runRoche()">
+                            <option value="1">km</option>
+                            <option value="1000">m</option>
+                            <option value="696340">R☉ (Sun)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Primary Density (\(\rho_M\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="roche-rhom" value="5514" oninput="runRoche()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">kg/m³</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Satellite Density (\(\rho_m\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="roche-rhom-sat" value="3344" oninput="runRoche()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">kg/m³</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Quick Presets</label>
+                    <div class="presets">
+                        <div class="preset-chip" onclick="setRochePreset(6371, 5514, 3344)">Earth - Moon</div>
+                        <div class="preset-chip" onclick="setRochePreset(60268, 687, 1000)">Saturn - Icy Moon</div>
+                        <div class="preset-chip" onclick="setRochePreset(696340, 1408, 5514)">Sun - Earth</div>
+                    </div>
+                </div>
+
+                <div class="math-block">
+                    $$d_{\text{rigid}} = R_M \left( 2 \frac{\rho_M}{\rho_m} \right)^{1/3} \approx 1.260 \cdot R_M \left(\frac{\rho_M}{\rho_m}\right)^{1/3}$$
+                    $$d_{\text{fluid}} \approx 2.423 \cdot R_M \left(\frac{\rho_M}{\rho_m}\right)^{1/3}$$
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Disruption Radius Visualizer</div>
+                <div class="vis-container" style="display:flex; justify-content:center; align-items:center;">
+                    <canvas id="roche-canvas" style="width:100%; height:100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Calculated Thresholds</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Rigid Body Limit (\(d_{\text{rigid}}\))</div>
+                        <div class="metric-value" id="roche-val-rigid">9,492 km</div>
+                        <div class="metric-sub">Held together purely by internal material tensile strength</div>
+                    </div>
+                    <div class="metric-card pink">
+                        <div class="metric-title">Fluid Body Limit (\(d_{\text{fluid}}\))</div>
+                        <div class="metric-value" id="roche-val-fluid">18,252 km</div>
+                        <div class="metric-sub">Held together purely by self-gravitation (tidal disruption)</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Density Ratio (\(\rho_M / \rho_m\))</div>
+                        <div class="metric-value" id="roche-val-ratio">1.65</div>
+                        <div class="metric-sub">Mass concentration factor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 6: TSIOLKOVSKY ROCKET EQUATION -->
+        <!-- =================================================================== -->
+        <div class="engine-panel standard-grid" id="engine-5">
+            <div class="card">
+                <div class="card-header">Mission & Propellant Parameters</div>
+
+                <div class="input-group">
+                    <label>Specific Impulse (\(I_{\text{sp}}\))</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="rocket-isp" value="311" oninput="runRocket()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">s</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Initial Mass (\(m_0\)) - Wet Mass</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="rocket-m0" value="549054" oninput="runRocket()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">kg</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Final Mass (\(m_f\)) - Dry Mass</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="rocket-mf" value="22200" oninput="runRocket()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">kg</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Quick Presets</label>
+                    <div class="presets">
+                        <div class="preset-chip" onclick="setRocketPreset(311, 549054, 22200)">Falcon 9 (Stage 1)</div>
+                        <div class="preset-chip" onclick="setRocketPreset(450, 130000, 13500)">Saturn V (S-IVB)</div>
+                        <div class="preset-chip" onclick="setRocketPreset(380, 1200000, 120000)">Starship (Upper)</div>
+                        <div class="preset-chip" onclick="setRocketPreset(3100, 1000, 500)">Ion Engine (Gridded)</div>
+                    </div>
+                </div>
+
+                <div class="math-block">
+                    $$\Delta v = v_e \ln\left(\frac{m_0}{m_f}\right) = I_{\text{sp}} \cdot g_0 \cdot \ln\left(\frac{m_0}{m_f}\right)$$
+                    $$m_p = m_0 - m_f = m_0 \left(1 - e^{-\Delta v / v_e}\right)$$
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Mass Breakdown Visualizer</div>
+                <div class="vis-container" style="display:flex; justify-content:center; align-items:center;">
+                    <canvas id="rocket-canvas" style="width:100%; height:100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Performance Output</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Total Delta-v (\(\Delta v\))</div>
+                        <div class="metric-value" id="rocket-val-dv">9,788 m/s</div>
+                        <div class="metric-sub" id="rocket-val-dv-km">9.79 km/s</div>
+                    </div>
+                    <div class="metric-card violet">
+                        <div class="metric-title">Effective Exhaust Velocity (\(v_e\))</div>
+                        <div class="metric-value" id="rocket-val-ve">3,050 m/s</div>
+                        <div class="metric-sub">\(v_e = I_{\text{sp}} \cdot g_0\)</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Mass Ratio (\(m_0 / m_f\))</div>
+                        <div class="metric-value" id="rocket-val-ratio">24.73</div>
+                        <div class="metric-sub" id="rocket-val-prop-mass">Propellant: 526,854 kg</div>
+                    </div>
+                    <div class="metric-card pink">
+                        <div class="metric-title">Propellant Mass Fraction</div>
+                        <div class="metric-value" id="rocket-val-pmf">96.0%</div>
+                        <div class="metric-sub">Fraction of liftoff mass that is propellant</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- ENGINE 7: COSMIC RAY & SPACE RADIATION DOSE -->
+        <!-- =================================================================== -->
+        <div class="engine-panel standard-grid" id="engine-6">
+            <div class="card">
+                <div class="card-header">Mission Environment & Shielding</div>
+
+                <div class="input-group">
+                    <label>Mission Duration</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="rad-days" value="180" oninput="runRad()">
+                        <span style="padding-top:8px; font-size:0.85rem; color:var(--text-muted); font-weight:700;">days</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Environment Trajectory</label>
+                    <div class="input-wrapper">
+                        <select id="rad-env" class="unit-select" style="width:100%;" onchange="runRad()">
+                            <option value="ISS">Low Earth Orbit (ISS / 400km)</option>
+                            <option value="LUNAR">Deep Space / Lunar Surface</option>
+                            <option value="MARS_TRANSIT">Interplanetary / Mars Transit</option>
+                            <option value="MARS_SURF">Mars Surface (Atmospheric Shield)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Shielding Material & Thickness</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="rad-shield-thick" value="10" step="1" min="0" oninput="runRad()">
+                        <select id="rad-shield-mat" class="unit-select" onchange="runRad()">
+                            <option value="AL">Aluminum</option>
+                            <option value="WATER">Water / Ice</option>
+                            <option value="POLY">Polyethylene (HDPE)</option>
+                            <option value="REGOLITH">Lunar Regolith</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Solar Activity Phase</label>
+                    <div class="input-wrapper">
+                        <select id="rad-solar" class="unit-select" style="width:100%;" onchange="runRad()">
+                            <option value="MIN">Solar Minimum (Peak GCR Flux)</option>
+                            <option value="MAX">Solar Maximum (Reduced GCR, Higher SPE Risk)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Quick Presets</label>
+                    <div class="presets">
+                        <div class="preset-chip" onclick="setRadPreset(180, 'ISS', 5, 'AL', 'MIN')">ISS 6-Mo Stay</div>
+                        <div class="preset-chip" onclick="setRadPreset(500, 'MARS_TRANSIT', 10, 'AL', 'MIN')">Mars Transit (Roundtrip)</div>
+                        <div class="preset-chip" onclick="setRadPreset(500, 'MARS_TRANSIT', 20, 'POLY', 'MIN')">Mars Transit (HDPE Shield)</div>
+                        <div class="preset-chip" onclick="setRadPreset(365, 'MARS_SURF', 15, 'REGOLITH', 'MIN')">1-Year Mars Base</div>
+                    </div>
+                </div>
+
+                <div class="math-block">
+                    $$D_{\text{total}} = t \cdot \left[ \dot{D}_{\text{GCR}} \cdot e^{-\mu \cdot x} + \dot{D}_{\text{SPE}} \right]$$
+                    $$\Delta \text{REID} \approx D_{\text{total}} \times 0.0045\% / \text{mSv}$$
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Dosage Profile & Safety Gauge</div>
+                <div class="vis-container" style="display:flex; justify-content:center; align-items:center;">
+                    <canvas id="rad-canvas" style="width:100%; height:100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Radiation Metrics & Health Impact</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Total Mission Dose</div>
+                        <div class="metric-value" id="rad-val-total">0 mSv</div>
+                        <div class="metric-sub" id="rad-val-rem">0 rem</div>
+                    </div>
+                    <div class="metric-card violet">
+                        <div class="metric-title">Daily Dose Rate</div>
+                        <div class="metric-value" id="rad-val-daily">0.00 mSv/day</div>
+                        <div class="metric-sub" id="rad-val-compare">vs 0.008 mSv/day Earth Background</div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-title">Career NASA Limit Factor</div>
+                        <div class="metric-value" id="rad-val-limit">0.0%</div>
+                        <div class="metric-sub">Standard 600 mSv Lifetime Exposure Limit</div>
+                    </div>
+                    <div class="metric-card pink">
+                        <div class="metric-title">Excess Fatal Cancer Risk (REID)</div>
+                        <div class="metric-value" id="rad-val-reid">+0.00%</div>
+                        <div class="metric-sub">Risk of Exposure-Induced Death</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MAIN COMPUTATIONAL & VISUALIZATION ENGINE -->
+    <script>
+        // Physical Constants (SI Units)
+        const C = 299792458;
+        const G = 6.67430e-11;
+        const HBAR = 1.054571817e-34;
+        const KB = 1.380649e-23;
+        const SIGMA = 5.670374419e-8;
+        const MSUN = 1.98847e30;
+        const MEARTH = 5.9722e24;
+        const RSUN = 696340000;
+        const LSUN = 3.828e26;
+        const RHOSUN = 1408;
+        const AU = 149597870700;
+        const EV = 1.602176634e-19;
+        const G0 = 9.80665;
+        const MSGR_A = 4.15e6 * MSUN;
+        const MM87 = 6.5e9 * MSUN;
+
+        // High Contrast State Toggle
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const isHC = document.body.classList.contains('high-contrast');
+            document.getElementById('hc-state').innerText = isHC ? 'ON' : 'OFF';
+            
+            // Re-render active canvas visuals with high contrast colors if needed
+            drawPlanetVis();
+            drawSRVis();
+            runRoche();
+            runRocket();
+            runRad();
+        }
+
+        // Tab Navigation
+        function setEngine(index) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === index));
+            document.querySelectorAll('.engine-panel').forEach((panel, i) => panel.classList.toggle('active', i === index));
+
+            setTimeout(() => {
+                if (index === 0 && bhRenderer) {
+                    const c = document.getElementById('bh-3d-view');
+                    if (c && c.clientWidth > 0 && c.clientHeight > 0) {
+                        bhRenderer.setSize(c.clientWidth, c.clientHeight);
+                        bhCamera.aspect = c.clientWidth / c.clientHeight;
+                        bhCamera.updateProjectionMatrix();
+                    }
+                }
+                if (index === 3) {
+                    if (grRenderer) {
+                        const c = document.getElementById('gr-3d-view');
+                        if (c && c.clientWidth > 0 && c.clientHeight > 0) {
+                            grRenderer.setSize(c.clientWidth, c.clientHeight);
+                            grCamera.aspect = c.clientWidth / c.clientHeight;
+                            grCamera.updateProjectionMatrix();
+                        }
+                    }
+                    runGR();
+                }
+                if (index === 1) drawPlanetVis();
+                if (index === 2) drawSRVis();
+                if (index === 4) runRoche();
+                if (index === 5) runRocket();
+                if (index === 6) runRad();
+            }, 60);
+        }
+
+        // Format helpers
+        function formatExprVal(num) {
+            if (num === 0 || isNaN(num) || !isFinite(num)) return "0";
+            const abs = Math.abs(num);
+            if (abs >= 1e5 || abs <= 1e-3) {
+                return num.toExponential(5).toUpperCase().replace('+', '');
+            }
+            return parseFloat(num.toFixed(5)).toString();
+        }
+
+        function formatSci(num, digits = 3) {
+            if (num === 0 || isNaN(num) || !isFinite(num)) return "0";
+            const abs = Math.abs(num);
+            if (abs >= 1e6 || abs <= 1e-3) {
+                return num.toExponential(digits);
+            }
+            return num.toLocaleString(undefined, { maximumFractionDigits: digits });
+        }
+
+        // ===================================================================
+        // ENGINE 1: BLACK HOLE FORMULAS
+        // ===================================================================
+        function setBHMassValue(solMass) {
+            document.getElementById('bh-val-mass').value = formatExprVal(solMass);
+            document.getElementById('bh-unit-mass').value = "MSUN";
+            runBHCalculations('mass');
+        }
+
+        function runBHCalculations(changedSource) {
+            let massKg = MSUN;
+
+            if (changedSource === 'rs') {
+                const rsVal = parseFloat(document.getElementById('bh-val-rs').value) || 0;
+                const rsUnit = document.getElementById('bh-unit-rs').value;
+                let rsMeters = rsVal;
+                if (rsUnit === 'KM') rsMeters = rsVal * 1000;
+                if (rsUnit === 'AU') rsMeters = rsVal * AU;
+                
+                massKg = (rsMeters * C * C) / (2 * G);
+                
+                const massUnit = document.getElementById('bh-unit-mass').value;
+                let massDisp = massKg;
+                if (massUnit === 'MSUN') massDisp = massKg / MSUN;
+                if (massUnit === 'MEARTH') massDisp = massKg / MEARTH;
+                document.getElementById('bh-val-mass').value = formatExprVal(massDisp);
+            } else {
+                const massVal = parseFloat(document.getElementById('bh-val-mass').value) || 0;
+                const massUnit = document.getElementById('bh-unit-mass').value;
+                massKg = massVal;
+                if (massUnit === 'MSUN') massKg = massVal * MSUN;
+                if (massUnit === 'MEARTH') massKg = massVal * MEARTH;
+            }
+
+            const M = massKg;
+
+            const R = (2 * G * M) / (C * C);
+            const rsUnit = document.getElementById('bh-unit-rs').value;
+            let Rdisp = R;
+            if (rsUnit === 'KM') Rdisp = R / 1000;
+            if (rsUnit === 'AU') Rdisp = R / AU;
+            if (changedSource !== 'rs') {
+                document.getElementById('bh-val-rs').value = formatExprVal(Rdisp);
+            }
+
+            const A = (16 * Math.PI * G * G * M * M) / Math.pow(C, 4);
+            document.getElementById('bh-val-area').value = formatExprVal(A);
+
+            const rho = (3 * Math.pow(C, 6)) / (32 * Math.PI * Math.pow(G, 3) * M * M);
+            const rhoUnit = document.getElementById('bh-unit-rho').value;
+            let rhoDisp = rho;
+            if (rhoUnit === 'RHOSUN') rhoDisp = rho / RHOSUN;
+            document.getElementById('bh-val-rho').value = formatExprVal(rhoDisp);
+
+            const kappa = Math.pow(C, 4) / (4 * G * M);
+            document.getElementById('bh-val-kappa').value = formatExprVal(kappa);
+
+            const tides = Math.pow(C, 6) / (4 * G * G * M * M);
+            document.getElementById('bh-val-tides').value = formatExprVal(tides);
+
+            const tsing = (M * Math.PI * G) / Math.pow(C, 3);
+            document.getElementById('bh-val-tsing').value = formatExprVal(tsing);
+
+            const S = (M * M * 4 * Math.PI * G) / (HBAR * C);
+            document.getElementById('bh-val-entropy').value = formatExprVal(S);
+
+            const T = (HBAR * Math.pow(C, 3)) / (8 * Math.PI * KB * G * M);
+            document.getElementById('bh-val-temp').value = formatExprVal(T);
+
+            const peakJoules = 2.821439 * KB * T;
+            const peakEv = peakJoules / EV;
+            document.getElementById('bh-val-peak').value = formatExprVal(peakEv);
+
+            const L = (HBAR * Math.pow(C, 6)) / (15360 * Math.PI * G * G * M * M);
+            document.getElementById('bh-val-lum').value = formatExprVal(L);
+
+            const tSec = (Math.pow(M, 3) * 5120 * Math.PI * G * G) / (1.8083 * HBAR * Math.pow(C, 4));
+            const lifeUnit = document.getElementById('bh-unit-life').value;
+            let lifeDisp = tSec;
+            if (lifeUnit === 'YR') lifeDisp = tSec / (365.25 * 24 * 3600);
+            document.getElementById('bh-val-life').value = formatExprVal(lifeDisp);
+
+            document.getElementById('bh-card-diameter').innerText = R < 1000 ? `${formatSci(R * 2)} m` : `${formatSci((R * 2) / 1000)} km`;
+            document.getElementById('bh-card-tsing').innerText = tsing < 1e-3 ? `${(tsing * 1e6).toFixed(2)} μs` : `${formatSci(tsing)} s`;
+        }
+
+        // ===================================================================
+        // PROPER SUPERMASSIVE BLACK HOLE 3D VISUALIZER (Three.js)
+        // ===================================================================
+        let bhRenderer, bhScene, bhCamera, bhControls;
+        let bhDiskMesh, bhHaloTop, bhHaloBottom, bhPhotonRing, bhParticleSystem, bhJetsGroup;
+        let bhParticlesData = [];
+
+        function createAccretionTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Fiery relativistic accretion gradient: inner blinding white-cyan -> gold -> deep orange -> crimson -> edge dust
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            grad.addColorStop(0.00, 'rgba(255, 255, 255, 1.0)');
+            grad.addColorStop(0.06, 'rgba(180, 245, 255, 1.0)');
+            grad.addColorStop(0.18, 'rgba(255, 215, 64, 0.95)');
+            grad.addColorStop(0.40, 'rgba(255, 120, 20, 0.85)');
+            grad.addColorStop(0.70, 'rgba(200, 30, 20, 0.55)');
+            grad.addColorStop(0.90, 'rgba(110, 10, 30, 0.25)');
+            grad.addColorStop(1.00, 'rgba(0, 0, 0, 0.0)');
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Relativistic plasma turbulence bands
+            for (let i = 0; i < 400; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const len = 10 + Math.random() * 40;
+                ctx.fillStyle = `rgba(255, 240, 200, ${0.05 + Math.random() * 0.15})`;
+                ctx.fillRect(x, y, len, 2);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            return texture;
+        }
+
+        function initBlackHole3D() {
+            const container = document.getElementById('bh-3d-view');
+            if (!container) return;
+
+            bhScene = new THREE.Scene();
+            bhScene.background = new THREE.Color(0x000000);
+
+            bhCamera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
+            bhCamera.position.set(0, 1.3, 5.2);
+
+            bhRenderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            bhRenderer.setSize(container.clientWidth, container.clientHeight);
+            bhRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.innerHTML = '';
+            container.appendChild(bhRenderer.domElement);
+
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                bhControls = new THREE.OrbitControls(bhCamera, bhRenderer.domElement);
+                bhControls.enableDamping = true;
+                bhControls.dampingFactor = 0.05;
+                bhControls.minDistance = 2.2;
+                bhControls.maxDistance = 14.0;
+            }
+
+            // 1. Central Event Horizon (Pitch black absorbing shadow sphere)
+            const horizonGeo = new THREE.SphereGeometry(1.0, 64, 64);
+            const horizonMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const horizonMesh = new THREE.Mesh(horizonGeo, horizonMat);
+            bhScene.add(horizonMesh);
+
+            // 2. Photon Ring (Razor-thin intensely luminous orbit at ~1.18 Rs)
+            const photonGeo = new THREE.RingGeometry(1.05, 1.18, 128);
+            const photonMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.95,
+                blending: THREE.AdditiveBlending
+            });
+            bhPhotonRing = new THREE.Mesh(photonGeo, photonMat);
+            bhPhotonRing.rotation.x = Math.PI / 2;
+            bhScene.add(bhPhotonRing);
+
+            const photonOuterGeo = new THREE.RingGeometry(1.15, 1.28, 128);
+            const photonOuterMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.65,
+                blending: THREE.AdditiveBlending
+            });
+            const photonOuterMesh = new THREE.Mesh(photonOuterGeo, photonOuterMat);
+            photonOuterMesh.rotation.x = Math.PI / 2;
+            bhScene.add(photonOuterMesh);
+
+            // 3. Primary Equatorial Accretion Disk
+            const diskTexture = createAccretionTexture();
+            const diskGeo = new THREE.RingGeometry(1.35, 4.2, 128, 8);
+            // Remap UVs radially for cylindrical accretion look
+            const pos = diskGeo.attributes.position;
+            const uv = diskGeo.attributes.uv;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const y = pos.getY(i);
+                const r = Math.sqrt(x*x + y*y);
+                const normalizedR = (r - 1.35) / (4.2 - 1.35);
+                const angle = Math.atan2(y, x);
+                uv.setXY(i, normalizedR, (angle + Math.PI) / (2 * Math.PI));
+            }
+            uv.needsUpdate = true;
+
+            const diskMat = new THREE.MeshBasicMaterial({
+                map: diskTexture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.92,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            bhDiskMesh = new THREE.Mesh(diskGeo, diskMat);
+            bhDiskMesh.rotation.x = Math.PI / 2;
+            bhScene.add(bhDiskMesh);
+
+            // 4. Relativistic Gravitational Lensing Halo (Over and Under Arcs)
+            // Light from the back of the disk bent over the top and bottom of the event horizon
+            const haloGeoTop = new THREE.RingGeometry(1.08, 2.3, 128, 4, 0, Math.PI);
+            const haloGeoBottom = new THREE.RingGeometry(1.08, 2.3, 128, 4, Math.PI, Math.PI);
+
+            const haloMat = new THREE.MeshBasicMaterial({
+                map: diskTexture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            bhHaloTop = new THREE.Mesh(haloGeoTop, haloMat);
+            bhHaloTop.position.z = -0.05;
+            bhHaloTop.rotation.x = 0;
+            bhScene.add(bhHaloTop);
+
+            bhHaloBottom = new THREE.Mesh(haloGeoBottom, haloMat);
+            bhHaloBottom.position.z = -0.05;
+            bhHaloBottom.rotation.x = 0;
+            bhScene.add(bhHaloBottom);
+
+            // 5. Relativistic Polar Jets (Bipolar plasma streams along rotational axis)
+            bhJetsGroup = new THREE.Group();
+            const jetGeo = new THREE.ConeGeometry(0.35, 6.0, 32, 1, true);
+            const jetMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.35,
+                blending: THREE.AdditiveBlending,
+                side: THREE.DoubleSide
+            });
+            const jetTop = new THREE.Mesh(jetGeo, jetMat);
+            jetTop.position.y = 3.6;
+            bhJetsGroup.add(jetTop);
+
+            const jetBottom = new THREE.Mesh(jetGeo, jetMat);
+            jetBottom.position.y = -3.6;
+            jetBottom.rotation.z = Math.PI;
+            bhJetsGroup.add(jetBottom);
+
+            // Inner high-energy jet core
+            const jetCoreGeo = new THREE.CylinderGeometry(0.04, 0.08, 7.5, 16);
+            const jetCoreMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending
+            });
+            const jetCore = new THREE.Mesh(jetCoreGeo, jetCoreMat);
+            bhJetsGroup.add(jetCore);
+            bhScene.add(bhJetsGroup);
+
+            // 6. Accretion Swirl Particle Stream (Thousands of swirling relativistic particles)
+            const particleCount = 2000;
+            const particleGeo = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(particleCount * 3);
+            const particleColors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const r = 1.35 + Math.random() * 3.2;
+                const theta = Math.random() * Math.PI * 2;
+                const y = (Math.random() - 0.5) * 0.12 * (r / 2.0);
+
+                particlePositions[i * 3 + 0] = r * Math.cos(theta);
+                particlePositions[i * 3 + 1] = y;
+                particlePositions[i * 3 + 2] = r * Math.sin(theta);
+
+                bhParticlesData.push({
+                    radius: r,
+                    angle: theta,
+                    speed: 0.015 / Math.sqrt(r) + (Math.random() * 0.005),
+                    infallSpeed: 0.0015 * (1.0 / (r - 0.95))
+                });
+
+                // Hotter / bluer near horizon, cooler orange/red near outer rim
+                const t = (r - 1.35) / 3.2;
+                particleColors[i * 3 + 0] = THREE.MathUtils.lerp(1.0, 0.9, t);
+                particleColors[i * 3 + 1] = THREE.MathUtils.lerp(0.9, 0.2, t);
+                particleColors[i * 3 + 2] = THREE.MathUtils.lerp(1.0, 0.1, t);
+            }
+
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+            const particleMat = new THREE.PointsMaterial({
+                size: 0.04,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending
+            });
+            bhParticleSystem = new THREE.Points(particleGeo, particleMat);
+            bhScene.add(bhParticleSystem);
+
+            // Animation Loop
+            let clock = new THREE.Clock();
+            function animateBH() {
+                requestAnimationFrame(animateBH);
+                const dt = clock.getDelta();
+
+                if (bhControls) bhControls.update();
+
+                // Rotate Accretion Disk texture & mesh
+                if (bhDiskMesh) {
+                    bhDiskMesh.rotation.z += 0.006;
+                }
+
+                // Dynamic Orientation of Lensing Halo:
+                // Gravitational lensing arcs bend around the horizon relative to observer camera vector!
+                if (bhHaloTop && bhHaloBottom) {
+                    bhHaloTop.quaternion.copy(bhCamera.quaternion);
+                    bhHaloBottom.quaternion.copy(bhCamera.quaternion);
+                }
+
+                // Update particle swirl
+                if (bhParticleSystem) {
+                    const posAttr = bhParticleSystem.geometry.attributes.position;
+                    for (let i = 0; i < particleCount; i++) {
+                        const p = bhParticlesData[i];
+                        p.angle += p.speed;
+                        p.radius -= p.infallSpeed;
+
+                        if (p.radius < 1.1) {
+                            // Infall into horizon -> respawn at outer rim
+                            p.radius = 4.2 + Math.random() * 0.4;
+                            p.angle = Math.random() * Math.PI * 2;
+                        }
+
+                        posAttr.setXYZ(i, p.radius * Math.cos(p.angle), (Math.sin(p.angle * 3) * 0.04), p.radius * Math.sin(p.angle));
+                    }
+                    posAttr.needsUpdate = true;
+                }
+
+                // Pulsate Jet Core
+                if (bhJetsGroup) {
+                    const pulse = 1.0 + Math.sin(Date.now() * 0.005) * 0.08;
+                    bhJetsGroup.scale.set(pulse, 1.0, pulse);
+                }
+
+                bhRenderer.render(bhScene, bhCamera);
+            }
+            animateBH();
+        }
+
+        function updateBHToggles() {
+            const showLensing = document.getElementById('bh-toggle-lensing').checked;
+            const showJets = document.getElementById('bh-toggle-jets').checked;
+            const showParticles = document.getElementById('bh-toggle-particles').checked;
+
+            if (bhHaloTop) bhHaloTop.visible = showLensing;
+            if (bhHaloBottom) bhHaloBottom.visible = showLensing;
+            if (bhJetsGroup) bhJetsGroup.visible = showJets;
+            if (bhParticleSystem) bhParticleSystem.visible = showParticles;
+        }
+
+        // ===================================================================
+        // ENGINE 2: PLANETARY THERMODYNAMICS
+        // ===================================================================
+        function setPlanetPreset(t, r, d, a, gh) {
+            document.getElementById('sp-stemp').value = t;
+            document.getElementById('sp-srad').value = r;
+            document.getElementById('sp-dist').value = d;
+            document.getElementById('sp-albedo').value = a;
+            document.getElementById('sp-gh').value = gh;
+            runPlanetary();
+        }
+
+        function runPlanetary() {
+            const Tstar = parseFloat(document.getElementById('sp-stemp').value) || 5778;
+            const Rstar = (parseFloat(document.getElementById('sp-srad').value) || 1) * RSUN;
+            const distAU = parseFloat(document.getElementById('sp-dist').value) || 1;
+            const dMeters = distAU * AU;
+            const albedo = parseFloat(document.getElementById('sp-albedo').value) || 0;
+            const ghWarming = parseFloat(document.getElementById('sp-gh').value) || 0;
+
+            const Lstar = 4 * Math.PI * Math.pow(Rstar, 2) * SIGMA * Math.pow(Tstar, 4);
+            const LstarSol = Lstar / LSUN;
+            const Flux = Lstar / (4 * Math.PI * Math.pow(dMeters, 2));
+
+            const Teq = Tstar * Math.sqrt(Rstar / (2 * dMeters)) * Math.pow(1 - albedo, 0.25);
+            const Tsurf = Teq + ghWarming;
+
+            document.getElementById('sp-lum').innerText = `${LstarSol.toFixed(2)} L☉`;
+            document.getElementById('sp-lum-watts').innerText = `${formatSci(Lstar)} W`;
+            document.getElementById('sp-flux').innerText = `${formatSci(Flux, 1)} W/m²`;
+            document.getElementById('sp-teq').innerText = `${Teq.toFixed(1)} K`;
+            document.getElementById('sp-teq-c').innerText = `${(Teq - 273.15).toFixed(1)} °C (Airless blackbody)`;
+            document.getElementById('sp-tsurf').innerText = `${Tsurf.toFixed(1)} K`;
+            document.getElementById('sp-tsurf-c').innerText = `${(Tsurf - 273.15).toFixed(1)} °C (Habitable surface)`;
+
+            drawPlanetVis();
+        }
+
+        function drawPlanetVis() {
+            const canvas = document.getElementById('planet-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cy = canvas.height / 2;
+
+            // Star
+            const starGlow = ctx.createRadialGradient(80, cy, 10, 80, cy, 85);
+            starGlow.addColorStop(0, '#ffffff');
+            starGlow.addColorStop(0.3, '#fbbf24');
+            starGlow.addColorStop(0.8, 'rgba(245, 158, 11, 0.3)');
+            starGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = starGlow;
+            ctx.beginPath(); ctx.arc(80, cy, 85, 0, Math.PI*2); ctx.fill();
+
+            // Planet
+            const planetX = canvas.width - 110;
+            const planetRadius = 26;
+            
+            // Atmospheric halo
+            const atmoGlow = ctx.createRadialGradient(planetX, cy, planetRadius, planetX, cy, planetRadius + 14);
+            atmoGlow.addColorStop(0, 'rgba(0, 240, 255, 0.6)');
+            atmoGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = atmoGlow;
+            ctx.beginPath(); ctx.arc(planetX, cy, planetRadius + 14, 0, Math.PI*2); ctx.fill();
+
+            // Planet body
+            const planetBody = ctx.createRadialGradient(planetX - 8, cy - 8, 4, planetX, cy, planetRadius);
+            planetBody.addColorStop(0, '#00f0ff');
+            planetBody.addColorStop(0.7, '#0369a1');
+            planetBody.addColorStop(1, '#082f49');
+            ctx.fillStyle = planetBody;
+            ctx.beginPath(); ctx.arc(planetX, cy, planetRadius, 0, Math.PI*2); ctx.fill();
+
+            // Radiation flux rays
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 6]);
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(130, cy + i*16);
+                ctx.lineTo(planetX - planetRadius - 10, cy + i*8);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // Text Labels
+            ctx.font = '600 12px Inter';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText("Host Star", 55, cy + 105);
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillText("Exoplanet", planetX - 25, cy + 55);
+        }
+
+        // ===================================================================
+        // ENGINE 3: SPECIAL RELATIVITY
+        // ===================================================================
+        function setSRPreset(v) {
+            document.getElementById('sr-v').value = v;
+            runSR();
+        }
+
+        function runSR() {
+            const vRatio = parseFloat(document.getElementById('sr-v').value) || 0;
+            const m0 = parseFloat(document.getElementById('sr-m').value) || 1;
+            const L0 = parseFloat(document.getElementById('sr-l').value) || 100;
+            const t0 = parseFloat(document.getElementById('sr-t').value) || 1;
+
+            const clampedV = Math.min(0.999999999, Math.max(0, vRatio));
+            const gamma = 1 / Math.sqrt(1 - Math.pow(clampedV, 2));
+
+            const dilatedTime = t0 * gamma;
+            const contractedLength = L0 / gamma;
+            
+            const totalE = gamma * m0 * Math.pow(C, 2);
+            const ke = (gamma - 1) * m0 * Math.pow(C, 2);
+
+            document.getElementById('sr-gamma').innerText = gamma >= 1000 ? formatSci(gamma) : gamma.toFixed(4);
+            document.getElementById('sr-time').innerText = `${formatSci(dilatedTime)} s`;
+            document.getElementById('sr-len').innerText = `${formatSci(contractedLength)} m`;
+            document.getElementById('sr-ke').innerText = `${formatSci(ke)} J`;
+            document.getElementById('sr-tot').innerText = `Total Energy: ${formatSci(totalE)} J`;
+
+            drawSRVis();
+        }
+
+        function drawSRVis() {
+            const canvas = document.getElementById('sr-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const vRatio = parseFloat(document.getElementById('sr-v').value) || 0;
+            const gamma = 1 / Math.sqrt(1 - Math.pow(vRatio, 2));
+
+            const baseWidth = Math.min(canvas.width * 0.6, 260);
+            const contractedWidth = Math.max(4, baseWidth / gamma);
+
+            // Proper Frame Box
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(canvas.width/2 - baseWidth/2, canvas.height/3 - 22, baseWidth, 44);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '700 12px Inter';
+            ctx.fillText("Proper Frame (v = 0) — Length: L₀", canvas.width/2 - 95, canvas.height/3 - 34);
+
+            // Contracted Frame Box
+            ctx.strokeStyle = '#00f0ff';
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+            ctx.fillRect(canvas.width/2 - contractedWidth/2, (canvas.height/3)*2 - 22, contractedWidth, 44);
+            ctx.strokeRect(canvas.width/2 - contractedWidth/2, (canvas.height/3)*2 - 22, contractedWidth, 44);
+            
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = '700 12px Inter';
+            ctx.fillText(`Relativistic Frame (v = ${vRatio}c) — Length: L = L₀/γ`, canvas.width/2 - 130, (canvas.height/3)*2 - 34);
+        }
+
+        // ===================================================================
+        // ENGINE 4: GENERAL RELATIVITY (FIXED CODE & FLAMM'S PARABOLOID 3D)
+        // ===================================================================
+        let grRenderer, grScene, grCamera, grControls;
+        let grFunnelMesh, grHorizonMesh, grPhotonMesh, grIscoMesh, grObserverMesh, grObserverOrbit;
+
+        function getGRMassInKg() {
+            const rawMass = parseFloat(document.getElementById('gr-m').value) || 1.0;
+            const unit = document.getElementById('gr-m-unit').value;
+            if (unit === 'MSUN') return rawMass * MSUN;
+            if (unit === 'MEARTH') return rawMass * MEARTH;
+            if (unit === 'SGR_A') return rawMass * MSGR_A;
+            if (unit === 'M87') return rawMass * MM87;
+            return rawMass; // KG
+        }
+
+        function onGRMassUnitChange() {
+            // Re-calculate and preserve mass value
+            runGR();
+        }
+
+        function setGRPreset(massVal, massUnit, rVal, rUnit) {
+            document.getElementById('gr-m').value = massVal;
+            document.getElementById('gr-m-unit').value = massUnit;
+            document.getElementById('gr-r').value = rVal;
+            document.getElementById('gr-r-unit').value = rUnit;
+            runGR();
+        }
+
+        function runGR() {
+            const M = getGRMassInKg();
+            const Rs = (2 * G * M) / (C * C); // in meters
+
+            // Determine r in meters
+            const rRaw = parseFloat(document.getElementById('gr-r').value) || 10000;
+            const rUnit = document.getElementById('gr-r-unit').value;
+            let rMeters = rRaw * 1000; // default KM
+            if (rUnit === 'M') rMeters = rRaw;
+            if (rUnit === 'AU') rMeters = rRaw * AU;
+            if (rUnit === 'RS') rMeters = rRaw * Rs;
+
+            const rOverRs = rMeters / Rs;
+            const photonRadius = 1.5 * Rs;
+            const iscoRadius = 3.0 * Rs;
+
+            // Results Update
+            const dilationElem = document.getElementById('gr-dilation');
+            const dilationSub = document.getElementById('gr-dilation-sub');
+            const redshiftElem = document.getElementById('gr-redshift');
+            const callout = document.getElementById('gr-zone-callout');
+
+            if (rMeters <= Rs) {
+                dilationElem.innerText = "HORIZON BREACHED";
+                dilationSub.innerText = "Singularity unavoidable, coordinate time diverges (dτ/dt → 0)";
+                redshiftElem.innerText = "INFINITE (z → ∞)";
+                callout.className = "warning-callout danger";
+                callout.innerHTML = `<span>⚠️ INSIDE EVENT HORIZON (r ≤ Rs): All future light cones point inward toward r=0. No stationary hover possible.</span>`;
+            } else {
+                const dilation = Math.sqrt(1 - (Rs / rMeters));
+                const z = (1 / dilation) - 1;
+
+                dilationElem.innerText = dilation.toFixed(6);
+                dilationSub.innerText = `Proper time rate: 1 sec on probe = ${(1/dilation).toFixed(4)} sec at infinity`;
+                redshiftElem.innerText = z.toFixed(6);
+
+                if (rOverRs < 1.5) {
+                    callout.className = "warning-callout danger";
+                    callout.innerHTML = `<span>🚨 PHOTON SPHERE BREACH (1.0 < r < 1.5 Rs): Light itself is bent into spiral plunge. Stationary hover requires astronomical thrust!</span>`;
+                } else if (rOverRs <= 3.0) {
+                    callout.className = "warning-callout caution";
+                    callout.innerHTML = `<span>⚠️ INSIDE ISCO (1.5 ≤ r ≤ 3.0 Rs): Circular orbits are dynamically unstable. Free-falling matter plunges into black hole.</span>`;
+                } else {
+                    callout.className = "warning-callout safe";
+                    callout.innerHTML = `<span>✓ STABLE REGIME (r > 3.0 Rs): Stable circular Keplerian orbits exist. Gravitational curvature is well-behaved.</span>`;
+                }
+            }
+
+            document.getElementById('gr-photon').innerText = `${formatSci(photonRadius / 1000)} km`;
+            document.getElementById('gr-isco').innerText = `${formatSci(iscoRadius / 1000)} km`;
+            document.getElementById('gr-rs').innerText = `${formatSci(Rs / 1000)} km`;
+
+            // Relativistic Escape velocity
+            if (rMeters <= Rs) {
+                document.getElementById('gr-vesc').innerText = "Escape velocity > c (Light cannot escape)";
+            } else {
+                const vesc = C * Math.sqrt(Rs / rMeters);
+                document.getElementById('gr-vesc').innerText = `Escape velocity at r: ${formatSci(vesc / 1000)} km/s (${(vesc/C*100).toFixed(2)}% c)`;
+            }
+
+            // Update 3D Flamm's Paraboloid
+            updateGR3DFunnel(rOverRs);
+        }
+
+        function initGR3D() {
+            const container = document.getElementById('gr-3d-view');
+            if (!container) return;
+
+            grScene = new THREE.Scene();
+            grScene.background = new THREE.Color(0x000000);
+
+            grCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            grCamera.position.set(0, 5.5, 9.0);
+
+            grRenderer = new THREE.WebGLRenderer({ antialias: true });
+            grRenderer.setSize(container.clientWidth, container.clientHeight);
+            grRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.innerHTML = '';
+            container.appendChild(grRenderer.domElement);
+
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                grControls = new THREE.OrbitControls(grCamera, grRenderer.domElement);
+                grControls.enableDamping = true;
+                grControls.dampingFactor = 0.05;
+                grControls.minDistance = 3.0;
+                grControls.maxDistance = 25.0;
+            }
+
+            // Central Horizon Sphere (Throat mouth at r = Rs)
+            const horGeo = new THREE.SphereGeometry(1.0, 32, 32);
+            const horMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            grHorizonMesh = new THREE.Mesh(horGeo, horMat);
+            grHorizonMesh.position.y = -3.2;
+            grScene.add(grHorizonMesh);
+
+            // Photon Sphere Ring (1.5 Rs)
+            const photonGeo = new THREE.RingGeometry(1.48, 1.52, 64);
+            const photonMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, side: THREE.DoubleSide });
+            grPhotonMesh = new THREE.Mesh(photonGeo, photonMat);
+            grPhotonMesh.rotation.x = Math.PI / 2;
+            grPhotonMesh.position.y = -2.4;
+            grScene.add(grPhotonMesh);
+
+            // ISCO Ring (3.0 Rs)
+            const iscoGeo = new THREE.RingGeometry(2.96, 3.04, 64);
+            const iscoMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide });
+            grIscoMesh = new THREE.Mesh(iscoGeo, iscoMat);
+            iscoMeshPosition(grIscoMesh, 3.0);
+            grScene.add(grIscoMesh);
+
+            // Observer Probe Mesh
+            const obsGeo = new THREE.SphereGeometry(0.14, 16, 16);
+            const obsMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e });
+            grObserverMesh = new THREE.Mesh(obsGeo, obsMat);
+            grScene.add(grObserverMesh);
+
+            // Observer Orbit Ring
+            const orbitGeo = new THREE.RingGeometry(0.98, 1.02, 64);
+            const orbitMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
+            grObserverOrbit = new THREE.Mesh(orbitGeo, orbitMat);
+            grObserverOrbit.rotation.x = Math.PI / 2;
+            grScene.add(grObserverOrbit);
+
+            // Flamm's Paraboloid Parametric Mesh
+            buildFlammFunnelMesh();
+
+            function animateGR() {
+                requestAnimationFrame(animateGR);
+                if (grControls) grControls.update();
+                if (grFunnelMesh) grFunnelMesh.rotation.y += 0.002;
+                if (grObserverMesh) {
+                    const time = Date.now() * 0.001;
+                    const rNorm = grObserverMesh.userData.normR || 3.0;
+                    const y = grObserverMesh.position.y;
+                    grObserverMesh.position.x = rNorm * Math.cos(time);
+                    grObserverMesh.position.z = rNorm * Math.sin(time);
+                }
+                grRenderer.render(grScene, grCamera);
+            }
+            animateGR();
+        }
+
+        function iscoMeshPosition(mesh, normR) {
+            mesh.rotation.x = Math.PI / 2;
+            // Flamm's formula depth: z = -2 * sqrt(Rs * (r - Rs))
+            const depth = -2.0 * Math.sqrt(Math.max(0, normR - 1.0));
+            mesh.position.y = depth;
+        }
+
+        function buildFlammFunnelMesh() {
+            const radialSegments = 40;
+            const heightSegments = 30;
+            const rMin = 1.0;
+            const rMax = 6.5;
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const indices = [];
+
+            for (let j = 0; j <= heightSegments; j++) {
+                const v = j / heightSegments;
+                const r = rMin + (rMax - rMin) * Math.pow(v, 1.3);
+                // Flamm's paraboloid height: -2 * sqrt(r - 1)
+                const zDepth = -2.2 * Math.sqrt(Math.max(0, r - 1.0));
+
+                for (let i = 0; i <= radialSegments; i++) {
+                    const u = i / radialSegments;
+                    const theta = u * Math.PI * 2;
+                    positions.push(r * Math.cos(theta), zDepth, r * Math.sin(theta));
+                }
+            }
+
+            for (let j = 0; j < heightSegments; j++) {
+                for (let i = 0; i < radialSegments; i++) {
+                    const a = j * (radialSegments + 1) + i;
+                    const b = (j + 1) * (radialSegments + 1) + i;
+                    const c = (j + 1) * (radialSegments + 1) + (i + 1);
+                    const d = j * (radialSegments + 1) + (i + 1);
+                    indices.push(a, b, d);
+                    indices.push(b, c, d);
+                }
+            }
+
+            geometry.setIndex(indices);
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x8b5cf6,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.75
+            });
+
+            grFunnelMesh = new THREE.Mesh(geometry, material);
+            grScene.add(grFunnelMesh);
+        }
+
+        function updateGR3DFunnel(rOverRs) {
+            if (!grObserverMesh || !grObserverOrbit) return;
+
+            const clampedR = Math.min(6.2, Math.max(1.0, rOverRs));
+            grObserverMesh.userData.normR = clampedR;
+
+            let depth = -2.2 * Math.sqrt(Math.max(0, clampedR - 1.0));
+            if (rOverRs < 1.0) depth = -3.5; // Inside horizon
+
+            grObserverMesh.position.y = depth;
+            grObserverOrbit.position.y = depth;
+            grObserverOrbit.scale.set(clampedR, clampedR, clampedR);
+        }
+
+        // ===================================================================
+        // ENGINE 5: ROCHE LIMIT CALCULATIONS
+        // ===================================================================
+        function setRochePreset(rm, rhom, rhomSat) {
+            document.getElementById('roche-rm').value = rm;
+            document.getElementById('roche-rhom').value = rhom;
+            document.getElementById('roche-rhom-sat').value = rhomSat;
+            runRoche();
+        }
+
+        function runRoche() {
+            const rm = parseFloat(document.getElementById('roche-rm').value) || 0;
+            const unitMult = parseFloat(document.getElementById('roche-rm-unit').value) || 1;
+            const rmKm = rm * unitMult;
+
+            const rhoM = parseFloat(document.getElementById('roche-rhom').value) || 1;
+            const rhomSat = parseFloat(document.getElementById('roche-rhom-sat').value) || 1;
+
+            const ratio = rhoM / rhomSat;
+            const dRigid = rmKm * Math.cbrt(2 * ratio);
+            const dFluid = 2.423 * rmKm * Math.cbrt(ratio);
+
+            document.getElementById('roche-val-rigid').innerText = `${formatSci(dRigid)} km`;
+            document.getElementById('roche-val-fluid').innerText = `${formatSci(dFluid)} km`;
+            document.getElementById('roche-val-ratio').innerText = ratio.toFixed(2);
+
+            drawRocheVis(rmKm, dRigid, dFluid);
+        }
+
+        function drawRocheVis(rm, dRigid, dFluid) {
+            const canvas = document.getElementById('roche-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cy = canvas.height / 2;
+
+            // Primary Body
+            const pRadius = 38;
+            ctx.fillStyle = '#a855f7';
+            ctx.beginPath(); ctx.arc(70, cy, pRadius, 0, Math.PI * 2); ctx.fill();
+
+            const maxDist = Math.max(dFluid, rm * 3);
+            const scale = (canvas.width - 140) / maxDist;
+
+            const xRigid = 70 + dRigid * scale;
+            const xFluid = 70 + dFluid * scale;
+
+            // Rigid Limit Line (Cyan)
+            if (xRigid < canvas.width) {
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(xRigid, 24); ctx.lineTo(xRigid, canvas.height - 24); ctx.stroke();
+                ctx.fillStyle = '#00f0ff';
+                ctx.font = '700 11px Inter';
+                ctx.fillText("Rigid Limit", xRigid - 30, 18);
+            }
+
+            // Fluid Limit Line (Pink)
+            if (xFluid < canvas.width) {
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(xFluid, 24); ctx.lineTo(xFluid, canvas.height - 24); ctx.stroke();
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = '700 11px Inter';
+                ctx.fillText("Fluid Limit", xFluid - 30, canvas.height - 8);
+            }
+            ctx.setLineDash([]);
+        }
+
+        // ===================================================================
+        // ENGINE 6: TSIOLKOVSKY ROCKET EQUATION
+        // ===================================================================
+        function setRocketPreset(isp, m0, mf) {
+            document.getElementById('rocket-isp').value = isp;
+            document.getElementById('rocket-m0').value = m0;
+            document.getElementById('rocket-mf').value = mf;
+            runRocket();
+        }
+
+        function runRocket() {
+            const isp = parseFloat(document.getElementById('rocket-isp').value) || 0;
+            const m0 = parseFloat(document.getElementById('rocket-m0').value) || 0;
+            const mf = parseFloat(document.getElementById('rocket-mf').value) || 0;
+
+            if (mf <= 0 || m0 < mf) {
+                document.getElementById('rocket-val-dv').innerText = "INVALID MASS";
+                document.getElementById('rocket-val-dv-km').innerText = "m₀ must be greater than mf";
+                return;
+            }
+
+            const ve = isp * G0;
+            const massRatio = m0 / mf;
+            const deltaV = ve * Math.log(massRatio);
+            const propellantMass = m0 - mf;
+            const pmf = (propellantMass / m0) * 100;
+
+            document.getElementById('rocket-val-dv').innerText = `${formatSci(deltaV)} m/s`;
+            document.getElementById('rocket-val-dv-km').innerText = `${(deltaV / 1000).toFixed(2)} km/s`;
+            document.getElementById('rocket-val-ve').innerText = `${formatSci(ve)} m/s`;
+            document.getElementById('rocket-val-ratio').innerText = massRatio.toFixed(2);
+            document.getElementById('rocket-val-prop-mass').innerText = `Propellant: ${formatSci(propellantMass)} kg`;
+            document.getElementById('rocket-val-pmf').innerText = `${pmf.toFixed(1)}%`;
+
+            drawRocketVis(m0, mf, propellantMass);
+        }
+
+        function drawRocketVis(m0, mf, propMass) {
+            const canvas = document.getElementById('rocket-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const rWidth = 80;
+            const rHeight = Math.min(canvas.height - 80, 230);
+            const topY = (canvas.height - rHeight) / 2;
+
+            const propRatio = propMass / m0;
+            const propHeight = rHeight * propRatio;
+            const dryHeight = rHeight - propHeight;
+
+            // Fuel Mass Portion (Bottom fill, pink)
+            ctx.fillStyle = 'rgba(244, 63, 94, 0.4)';
+            ctx.strokeStyle = '#f43f5e';
+            ctx.lineWidth = 2;
+            ctx.fillRect(cx - rWidth / 2, topY + dryHeight, rWidth, propHeight);
+            ctx.strokeRect(cx - rWidth / 2, topY + dryHeight, rWidth, propHeight);
+
+            // Dry Mass Portion (Top fill, cyan)
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.35)';
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 2;
+            ctx.fillRect(cx - rWidth / 2, topY, rWidth, dryHeight);
+            ctx.strokeRect(cx - rWidth / 2, topY, rWidth, dryHeight);
+
+            // Labels
+            ctx.font = '700 12px Inter';
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillText(`Dry Mass (${((mf / m0) * 100).toFixed(1)}%)`, cx + rWidth / 2 + 14, topY + Math.max(16, dryHeight / 2));
+
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillText(`Propellant (${(propRatio * 100).toFixed(1)}%)`, cx + rWidth / 2 + 14, topY + dryHeight + (propHeight / 2));
+        }
+
+        // ===================================================================
+        // ENGINE 7: COSMIC RAY & SPACE RADIATION DOSE
+        // ===================================================================
+        function setRadPreset(days, env, thick, mat, solar) {
+            document.getElementById('rad-days').value = days;
+            document.getElementById('rad-env').value = env;
+            document.getElementById('rad-shield-thick').value = thick;
+            document.getElementById('rad-shield-mat').value = mat;
+            document.getElementById('rad-solar').value = solar;
+            runRad();
+        }
+
+        function runRad() {
+            const days = parseFloat(document.getElementById('rad-days').value) || 0;
+            const env = document.getElementById('rad-env').value;
+            const thicknessCm = parseFloat(document.getElementById('rad-shield-thick').value) || 0;
+            const mat = document.getElementById('rad-shield-mat').value;
+            const solar = document.getElementById('rad-solar').value;
+
+            let baseGCR = 1.8;
+            if (env === 'ISS') baseGCR = 0.5;
+            if (env === 'MARS_SURF') baseGCR = 0.7;
+
+            const solarFactor = (solar === 'MIN') ? 1.25 : 0.75;
+            baseGCR *= solarFactor;
+
+            const matDensity = { 'AL': 2.7, 'WATER': 1.0, 'POLY': 0.95, 'REGOLITH': 1.5 };
+            const attenuationCoeff = { 'AL': 0.012, 'WATER': 0.022, 'POLY': 0.028, 'REGOLITH': 0.015 };
+
+            const density = matDensity[mat] || 1.0;
+            const coeff = attenuationCoeff[mat] || 0.015;
+            const arealMass = thicknessCm * density;
+
+            const dailyDose = baseGCR * Math.exp(-coeff * arealMass);
+            const totalDose = dailyDose * days;
+            const totalRem = totalDose / 10;
+            const nasaLimitPct = (totalDose / 600) * 100;
+            const reidRisk = totalDose * 0.0045;
+
+            document.getElementById('rad-val-total').innerText = `${formatSci(totalDose, 1)} mSv`;
+            document.getElementById('rad-val-rem').innerText = `${totalRem.toFixed(1)} rem`;
+            document.getElementById('rad-val-daily').innerText = `${dailyDose.toFixed(2)} mSv/day`;
+            document.getElementById('rad-val-compare').innerText = `vs ${(dailyDose / 0.0082).toFixed(0)}x Earth Background (0.008 mSv/d)`;
+            document.getElementById('rad-val-limit').innerText = `${nasaLimitPct.toFixed(1)}%`;
+            document.getElementById('rad-val-reid').innerText = `+${reidRisk.toFixed(2)}%`;
+
+            drawRadVis(totalDose, 600);
+        }
+
+        function drawRadVis(dose, limit) {
+            const canvas = document.getElementById('rad-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 + 10;
+            const radius = Math.min(canvas.width, canvas.height) / 3;
+
+            // Background Gauge Arc
+            ctx.lineWidth = 18;
+            ctx.strokeStyle = '#222938';
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, Math.PI * 0.8, Math.PI * 2.2);
+            ctx.stroke();
+
+            // Dose Level Arc
+            const pct = Math.min(1.0, dose / limit);
+            const endAngle = Math.PI * 0.8 + (pct * Math.PI * 1.4);
+
+            let color = '#00f0ff';
+            if (pct > 0.5) color = '#fbbf24';
+            if (pct > 0.85) color = '#f43f5e';
+
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, Math.PI * 0.8, endAngle);
+            ctx.stroke();
+
+            // Center Metric Label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '700 24px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${dose.toFixed(0)} mSv`, cx, cy - 4);
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '600 12px Inter';
+            ctx.fillText(`600 mSv NASA Limit`, cx, cy + 20);
+        }
+
+        // ===================================================================
+        // INITIALIZATION
+        // ===================================================================
+        window.addEventListener('load', () => {
+            initBlackHole3D();
+            initGR3D();
+            runBHCalculations('mass');
+            runPlanetary();
+            runSR();
+            runGR();
+        });
+
+        window.addEventListener('resize', () => {
+            if (bhRenderer) {
+                const c = document.getElementById('bh-3d-view');
+                if (c && c.clientWidth > 0 && c.clientHeight > 0) {
+                    bhRenderer.setSize(c.clientWidth, c.clientHeight);
+                    bhCamera.aspect = c.clientWidth / c.clientHeight;
+                    bhCamera.updateProjectionMatrix();
+                }
+            }
+            if (grRenderer) {
+                const c = document.getElementById('gr-3d-view');
+                if (c && c.clientWidth > 0 && c.clientHeight > 0) {
+                    grRenderer.setSize(c.clientWidth, c.clientHeight);
+                    grCamera.aspect = c.clientWidth / c.clientHeight;
+                    grCamera.updateProjectionMatrix();
+                }
+            }
+            drawPlanetVis();
+            drawSRVis();
+        });
+    </script>
+</body>
+</html>
